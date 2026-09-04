@@ -17,6 +17,30 @@ if [ ! -d "$GLIBC_SRC" ]; then
 fi
 
 mkdir -p "$BUILD_DIR" "$INSTALL_DIR"
+
+echo "[06] Applying known-bug patch: syslog.c always_inline failure..."
+echo "     (glibc 2.39 bug: ldbl_strong_alias on syslog fails to inline"
+echo "     under -O2 with fortify flags — same bug reported against"
+echo "     glibc 2.33-2.37 on Arch/Gentoo, still present in 2.39)"
+SYSLOG_FILE="$GLIBC_SRC/misc/syslog.c"
+if [ -f "$SYSLOG_FILE" ]; then
+    if grep -q "^ldbl_strong_alias (__syslog, syslog)$" "$SYSLOG_FILE"; then
+        sed -i '/^ldbl_strong_alias (__syslog, syslog)$/d' "$SYSLOG_FILE"
+        echo "[06] Patched: removed problematic ldbl_strong_alias line from syslog.c"
+    else
+        echo "[06] Pattern not found verbatim — checking for patched state..."
+        if grep -q "ldbl_strong_alias (__syslog, syslog)" "$SYSLOG_FILE"; then
+            echo "[06] WARNING: line exists but didn't match exactly — inspect manually:" >&2
+            grep -n "ldbl_strong_alias (__syslog, syslog)" "$SYSLOG_FILE" >&2
+        else
+            echo "[06] Line already absent — syslog.c already patched, skipping."
+        fi
+    fi
+else
+    echo "[06] ERROR: $SYSLOG_FILE not found — glibc source tree layout unexpected" >&2
+    exit 1
+fi
+
 cd "$BUILD_DIR"
 
 echo "[06] Configuring glibc (out-of-tree build)..."
