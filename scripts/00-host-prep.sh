@@ -3,10 +3,10 @@ set -euo pipefail
 # 00-host-prep.sh — check host deps, prepare work/output dirs
 
 echo "[00] Updating package lists..."
-apt-get update && apt-get upgrade -y
+sudo apt-get update && sudo apt-get upgrade -y
 
 echo "[00] Installing build dependencies..."
-apt-get install -y \
+sudo apt-get install -y \
     build-essential \
     gcc g++ make \
     gawk bison texinfo \
