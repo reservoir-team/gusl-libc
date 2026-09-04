@@ -1,0 +1,48 @@
+name: Build gusl-libc
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 00 - Host prep
+        run: bash scripts/00-host-prep.sh
+
+      - name: 01 - Fetch sources
+        run: bash scripts/01-fetch-sources.sh
+
+      - name: 02 - Analyze musl ABI
+        run: bash scripts/02-analyze-musl-abi.sh
+
+      - name: 03 - Toolchain
+        run: bash scripts/03-toolchain.sh
+
+      - name: 04 - Patch glibc symbols
+        run: bash scripts/04-patch-glibc-symbols.sh
+
+      - name: 05 - Patch loader
+        run: bash scripts/05-patch-loader.sh
+
+      - name: 06 - Build glibc
+        run: bash scripts/06-build-glibc.sh
+
+      - name: 07 - Static test
+        run: bash scripts/07-static-test.sh
+
+      - name: 08 - Dynamic test
+        run: bash scripts/08-dynamic-test.sh
+
+      - name: 09 - Package
+        run: bash scripts/09-package.sh
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gusl-libc-build
+          path: output/

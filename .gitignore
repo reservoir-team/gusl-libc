@@ -1,0 +1,5 @@
+work/
+output/
+sources/
+*.log
+*.tar.*
